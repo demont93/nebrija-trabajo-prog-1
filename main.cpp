@@ -97,13 +97,21 @@ Acierto acierto(int ranura_de_ruleta, int ranura_de_apuesta) {
   // TODO utiliza color_de_ranura()
 }
 
+// Calcula el siguiente turno a partir de el turno anterior y la tabla de
+// jugadores activos. Incrementa el turno y calcula el modulo 4 para hacer
+// "wrap-around", si el jugador no esta activo sigue al siguiente.
+int siguiente_turno(int turno, const std::array<bool, 4> &activos) {
+  do turno = ++turno % 4; while (!activos[turno]);
+  return turno;
+}
+
 int main() {
   // El numero del jugador sera su indice.
   // Todos los jugadores empiezan con 10 euros.
   std::array<int, 4> carteras{10, 10, 10, 10};
   // Para hacerlo sencillo me parece mas facil hacer 2 arrays paralelos en vez
   // de una estructura jugador.
-  std::array<bool, 4> activo{true, true, true, true};
+  std::array<bool, 4> activos{true, true, true, true};
 
   // Motor de numeros aleatorios.
   std::random_device rand{};
@@ -113,11 +121,15 @@ int main() {
   // El banco comienza vacio para calcular si gano o perdio.
   int banco{0};
 
-  while (alguien_activo(activo)) {
+  // Turno empieza en 0 y se reinicia al final.
+  int turno{0};
+
+  while (alguien_activo(activos)) {
     // hacer cosas...
+    turno = siguiente_turno(turno, activos);
   }
 
-  // Mostrar resultado final
+  // mostrar resultado final...
 
   return 0;
 }
