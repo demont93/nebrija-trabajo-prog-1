@@ -79,7 +79,7 @@ int producir_numero_ranura(std::uniform_int_distribution<int> &dist,
 // Los tipos posibles de acierto entre la apuesta del jugador y el resultado de
 // la ruleta.
 enum class Acierto {
-  NumeroYColor,
+  Numero,
   Color,
   Ninguno,
 };
