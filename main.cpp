@@ -103,19 +103,21 @@ int main() {
   // Motor de numeros aleatorios.
   std::random_device rand{};
   // Ranura puede ser [0,36]
-  std::uniform_int_distribution rand_ranura(0, 36);
+  std::uniform_int_distribution ruleta(0, 36);
 
   // El banco comienza vacio para calcular si gano o perdio.
   int banco{0};
 
   // mostrar bienvenida...
 
-  // Loop principal del programa.
+  // Loop de rondas
   while (alguien_activo(activos)) {
-    // hacer cosas...
-    auto ranura_de_jugador{8}; // placeholder
-    auto apuesta_de_jugador{20}; // placeholder
-    auto resultado_ruleta{producir_numero_ranura(rand_ranura, rand)};
+    // Obtener apuestas y ranuras.
+    // Girar rueda.
+    // simular giro...
+    auto resultado_ruleta{producir_numero_ranura(ruleta, rand)}
+    // Calcular resultados.
+    // reportar resultados...
   }
 
   // mostrar resultado final...
