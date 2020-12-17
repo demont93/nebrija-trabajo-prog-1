@@ -1,5 +1,7 @@
 # nebrija-trabajo-prog-1
-Trabajo final en grupo para Programacion I.
+Trabajo final en grupo para Programacion I.  
+  
+> **Nota: Para propósito del curso, todo estará implementado y definido dentro del main.cpp.**
 
 ## Integrantes
 - Derek Montesdeoca
