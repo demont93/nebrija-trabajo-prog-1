@@ -65,10 +65,11 @@ ColorRanura numero_a_color(int n) {
   else return ColorRanura::Negro;
 }
 
-// Produce un color a partir de nuestro motor de numeros aleatorios.
-ColorRanura producir_color(std::uniform_int_distribution<int> &dist,
-                           std::random_device &rand) {
-  return numero_a_color(dist(rand));
+// Te dice el color de la ranura, como lo unico que hay que saber es si la
+// ranura es par, calcula si el numero es par o no y produce el color.
+ColorRanura producir_color(int n) {
+  assert(n >= 0 && n <= 36 && "Las ranuras solo pertenecen al rango [0,36]");
+  // TODO utilizar la funcion numero a color
 }
 
 // Producir una ranura, hay que tener cuidado de pasar la distribucion correcta.
