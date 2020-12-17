@@ -63,5 +63,7 @@ dinero. Al finalizar el juego se debe mostrar cuánto dinero ha ganado cada
 jugador y cuánto dinero ha ganado la banca.
 > **Nota: El programa debe comprobar en todo momento que los datos introducidos por el usuario y las apuestas a realizar son coherentes, por ejemplo, no se puede apostar por el número 65.**
 
+# Extra 
+
 - Compilado ejecutado y probado en GCC 10.2.1.
 - CXX_STANDARD=20
