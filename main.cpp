@@ -42,6 +42,13 @@
 
 #include <array>
 #include <algorithm>
+#include <random>
+
+// Enumeracion para evitar usar colores como numero que puede ser confuso.
+enum class ColorRanura {
+  Rojo,
+  Negro
+};
 
 // Le pasas un array de bools y te dice si alguno esta activo.
 bool alguien_activo(const std::array<bool, 4>&activos) {
@@ -55,6 +62,13 @@ int main() {
   // Para hacerlo sencillo me parece mas facil hacer 2 arrays paralelos en vez
   // de una estructura jugador.
   std::array<bool, 4> activo{true,true,true,true};
+
+  // Motor de numeros aleatorios.
+  std::random_device rand{};
+  // Color solo puede ser rojo o negro
+  std::uniform_int_distribution rand_color(0,1);
+  // Ranura puede ser [0,36]
+  std::uniform_int_distribution rand_ranura(0,36);
 
   // El banco comienza vacio para calcular si gano o perdio.
   int banco{0};
