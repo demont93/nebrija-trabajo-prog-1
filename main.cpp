@@ -68,7 +68,16 @@ ColorRanura numero_a_color(int n) {
 // Produce un color a partir de nuestro motor de numeros aleatorios.
 ColorRanura producir_color(std::uniform_int_distribution<int> &dist,
                            std::random_device &rand) {
- return numero_a_color(dist(rand));
+  return numero_a_color(dist(rand));
+}
+
+// Producir una ranura, hay que tener cuidado de pasar la distribucion correcta.
+int producir_ranura(std::uniform_int_distribution<int> &dist,
+                    std::random_device &rand) {
+  auto ret_val{dist(rand)};
+  assert(ret_val >= 0 && ret_val <= 36 &&
+         "Las ranuras solo pertenecen al rango [0,36]");
+  return ret_val;
 }
 
 int main() {
