@@ -43,6 +43,7 @@
 #include <array>
 #include <algorithm>
 #include <random>
+#include <cassert>
 
 // Enumeracion para evitar usar colores como numero que puede ser confuso.
 enum class ColorRanura {
@@ -51,24 +52,39 @@ enum class ColorRanura {
 };
 
 // Le pasas un array de bools y te dice si alguno esta activo.
-bool alguien_activo(const std::array<bool, 4>&activos) {
-  return std::ranges::any_of(activos, [](const auto&a){return a;});
+bool alguien_activo(const std::array<bool, 4> &activos) {
+  return std::ranges::any_of(activos, [](const auto &a) { return a; });
+}
+
+// convierte de forma uniforme los colores a numeros
+ColorRanura numero_a_color(int n) {
+  // El assert nos permite dar un error si le pasamos valores incorrectos a la
+  // funcion. Es mejor dar un error temprano que tener un bug silencioso.
+  assert(n == 0 || n == 1 && "Solo se puede obtener un color del numero 0 o 1");
+  if (n == 0) return ColorRanura::Rojo;
+  else return ColorRanura::Negro;
+}
+
+// Produce un color a partir de nuestro motor de numeros aleatorios.
+ColorRanura producir_color(std::uniform_int_distribution<int> &dist,
+                           std::random_device &rand) {
+ return numero_a_color(dist(rand));
 }
 
 int main() {
   // El numero del jugador sera su indice.
   // Todos los jugadores empiezan con 10 euros.
-  std::array<int, 4> carteras{10,10,10,10};
+  std::array<int, 4> carteras{10, 10, 10, 10};
   // Para hacerlo sencillo me parece mas facil hacer 2 arrays paralelos en vez
   // de una estructura jugador.
-  std::array<bool, 4> activo{true,true,true,true};
+  std::array<bool, 4> activo{true, true, true, true};
 
   // Motor de numeros aleatorios.
   std::random_device rand{};
   // Color solo puede ser rojo o negro
-  std::uniform_int_distribution rand_color(0,1);
+  std::uniform_int_distribution rand_color(0, 1);
   // Ranura puede ser [0,36]
-  std::uniform_int_distribution rand_ranura(0,36);
+  std::uniform_int_distribution rand_ranura(0, 36);
 
   // El banco comienza vacio para calcular si gano o perdio.
   int banco{0};
