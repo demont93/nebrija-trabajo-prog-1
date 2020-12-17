@@ -19,6 +19,8 @@ Trabajo final en grupo para Programacion I.
 - [ ] Diseño de funcion acierto().
 - [ ] Diseño de funcion color_de_ranura().
 - [ ] Mutar cartera de jugador con base en el resultado de acierto().
+- [ ] Administrar condicion especial ranura 0.
+- [ ] Calcular ganancia/perdida banca.
 - [ ] Display de bienvenida.
 - [ ] Display de turnos.
   - [ ] Etapa 1.
