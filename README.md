@@ -35,6 +35,8 @@ Trabajo final en grupo para Programacion I.
 
 # Ruleta
 
+## Reglas
+
 La ruleta es un juego de azar jugado con una rueda que tiene 37 ranuras
 numeradas de 0 a 36. Las ranuras alrededor de la carrera son alternativamente
 rojas y negras con excepción de la rueda número 0, que es de color verde. El
