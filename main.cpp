@@ -13,30 +13,25 @@
 /// Orden de los jugadores:
 /// Todos los jugadores juegan en orden hasta que se retiren o pierdan el dinero.
 ///
+/// Ronda:
+/// 1. Obtener todos los turnos.
+/// 2. Girar la ruleta.
+/// 3. Mostrar resultados.
+///
 /// Mostrar por pantalla al finalizar:
 /// 1. Cuanto ha ganado/perdido la banca.
-/// 2. Cuanto ha ganado/perdido cada jugador en orden.
+/// 2. Cuanto ha ganado/perdido cada jugador.
 ///
 /// Etapas de cada turno:
-///  Etapa 1: Mostrar data inicial del jugador actual.
-///  Etapa 2: Pedir casilla o aceptar retiro.
-///  Etapa 3: Simular giro de la rueda con un "sleep".
-///  Etapa 4: Mostrar si ha acertado, que ha acertado
-///           Si se ha quedado sin dinero.
-///           Data actualizada.
+/// Etapa 1: Mostrar data inicial del jugador actual.
+/// Etapa 2: Pedir casilla o aceptar retiro.
 ///
 /// Mostrar por pantalla en cada etapa de cada turno:
 /// Etapa 1:
-/// 1. Etiqueta del jugador. Ej. Jugador 1.
-/// 2. Dinero actual. Ej. e5
+///   1. Etiqueta del jugador. Ej. Jugador 1.
+///   2. Dinero actual. Ej. e5
 /// Etapa 2:
-/// 1. Casilla y color elegido.
-/// Etapa 3:
-/// 1. Indicador de que la rueda esta girando. (posbile animacion para flair).
-/// Etapa 4:
-/// 1. Si ha acertado o no y que ha acertado. Ej. Acertaste color.
-/// 2. Dinero actualizado.
-/// 3. Si se ha quedado sin dinero.
+///   1. Casilla y color elegido.
 ///
 //============================================================================//
 
@@ -97,14 +92,6 @@ Acierto acierto(int ranura_de_ruleta, int ranura_de_apuesta) {
   // TODO utiliza color_de_ranura()
 }
 
-// Calcula el siguiente turno a partir de el turno anterior y la tabla de
-// jugadores activos. Incrementa el turno y calcula el modulo 4 para hacer
-// "wrap-around", si el jugador no esta activo sigue al siguiente.
-int siguiente_turno(int turno, const std::array<bool, 4> &activos) {
-  do turno = ++turno % 4; while (!activos[turno]);
-  return turno;
-}
-
 int main() {
   // El numero del jugador sera su indice.
   // Todos los jugadores empiezan con 10 euros.
@@ -121,12 +108,14 @@ int main() {
   // El banco comienza vacio para calcular si gano o perdio.
   int banco{0};
 
-  // Turno empieza en 0 y se reinicia al final.
-  int turno{0};
+  // mostrar bienvenida...
 
+  // Loop principal del programa.
   while (alguien_activo(activos)) {
     // hacer cosas...
-    turno = siguiente_turno(turno, activos);
+    auto ranura_de_jugador{8}; // placeholder
+    auto apuesta_de_jugador{20}; // placeholder
+    auto resultado_ruleta{producir_numero_ranura(rand_ranura, rand)};
   }
 
   // mostrar resultado final...

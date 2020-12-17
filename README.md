@@ -22,16 +22,16 @@ Trabajo final en grupo para Programacion I.
 - [ ] Administrar condicion especial ranura 0.
 - [ ] Calcular ganancia/perdida banca.
 - [ ] Display de bienvenida.
+- [ ] Display de ronda.
 - [ ] Display de turnos.
   - [ ] Etapa 1.
   - [ ] Etapa 2.
-  - [ ] Etapa 3.
-  - [ ] Etapa 4.
 - [ ] Display final de juego.
 - [x] Diseñar condiciones de salida.
 - [ ] Entradas de user input con errores.
   - [ ] Entrada de retirarse o seguir.
   - [ ] Entrada de elegir ranura.
+  - [ ] Entrada de elegir apuesta.
 - [ ] Tests de user input.
 - [ ] Flair?
 
