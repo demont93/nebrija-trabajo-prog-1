@@ -81,6 +81,14 @@ int producir_numero_ranura(std::uniform_int_distribution<int> &dist,
   return ret_val;
 }
 
+// Los tipos posibles de acierto entre la apuesta del jugador y el resultado de
+// la ruleta.
+enum class Acierto {
+  NumeroYColor,
+  Color,
+  Ninguno,
+};
+
 int main() {
   // El numero del jugador sera su indice.
   // Todos los jugadores empiezan con 10 euros.
