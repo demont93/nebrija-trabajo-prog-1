@@ -67,7 +67,7 @@ ColorRanura numero_a_color(int n) {
 
 // Te dice el color de la ranura, como lo unico que hay que saber es si la
 // ranura es par, calcula si el numero es par o no y produce el color.
-ColorRanura producir_color(int n) {
+ColorRanura color_de_ranura(int n) {
   assert(n >= 0 && n <= 36 && "Las ranuras solo pertenecen al rango [0,36]");
   // TODO utilizar la funcion numero a color
 }
@@ -88,6 +88,14 @@ enum class Acierto {
   Color,
   Ninguno,
 };
+
+// Le pasas la ranura de la apuesta y le pasas la ranura que salio en la ruleta
+// deberia devolver el tipo de acierto. Si el match es de numero devuelve
+// Acierto::NumeroYColor. Si el match es de color solamente, devuelve
+// Acierto::Color. Sino devuelve Acierto::Ninguno.
+Acierto acierto(int ranura_de_ruleta, int ranura_de_apuesta) {
+  // TODO utiliza color_de_ranura()
+}
 
 int main() {
   // El numero del jugador sera su indice.
