@@ -40,7 +40,30 @@
 ///
 //============================================================================//
 
+#include <array>
+#include <algorithm>
+
+// Le pasas un array de bools y te dice si alguno esta activo.
+bool alguien_activo(const std::array<bool, 4>&activos) {
+  return std::ranges::any_of(activos, [](const auto&a){return a;});
+}
 
 int main() {
+  // El numero del jugador sera su indice.
+  // Todos los jugadores empiezan con 10 euros.
+  std::array<int, 4> carteras{10,10,10,10};
+  // Para hacerlo sencillo me parece mas facil hacer 2 arrays paralelos en vez
+  // de una estructura jugador.
+  std::array<bool, 4> activo{true,true,true,true};
+
+  // El banco comienza vacio para calcular si gano o perdio.
+  int banco{0};
+
+  while (alguien_activo(activo)) {
+    // hacer cosas...
+  }
+
+  // Mostrar resultado final
+
   return 0;
 }
