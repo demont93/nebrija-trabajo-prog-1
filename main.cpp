@@ -99,8 +99,6 @@ int main() {
 
   // Motor de numeros aleatorios.
   std::random_device rand{};
-  // Color solo puede ser rojo o negro
-  std::uniform_int_distribution rand_color(0, 1);
   // Ranura puede ser [0,36]
   std::uniform_int_distribution rand_ranura(0, 36);
 
