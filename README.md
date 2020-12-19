@@ -16,11 +16,11 @@ Trabajo final en grupo para Programacion I.
 ## Roadmap
 
 - [x] Crear representación de la data.
-- [ ] Diseño de funcion acierto().
-- [ ] Diseño de funcion color_de_ranura().
-- [ ] Mutar cartera de jugador con base en el resultado de acierto().
-- [ ] Administrar condicion especial ranura 0.
-- [ ] Calcular ganancia/perdida banca.
+- [x] Diseño de funcion acierto().
+- [x] Diseño de funcion color_de_ranura().
+- [x] Mutar cartera de jugador con base en el resultado de acierto().
+- [x] Administrar condicion especial ranura 0.
+- [x] Calcular ganancia/perdida banca.
 - [ ] Display de bienvenida.
 - [ ] Display de ronda.
 - [ ] Display de turnos.
