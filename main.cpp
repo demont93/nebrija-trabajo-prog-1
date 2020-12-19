@@ -84,7 +84,7 @@ ColorRanura numero_a_color(int n) {
 // ranura es par, calcula si el numero es par o no y produce el color.
 ColorRanura color_de_ranura(int n) {
   assert(n >= 0 && n <= 36 && "Las ranuras solo pertenecen al rango [0,36]");
-  // TODO utilizar la funcion numero a color
+  return numero_a_color(n % 2);
 }
 
 // Producir una ranura, hay que tener cuidado de pasar la distribucion correcta.
@@ -109,7 +109,13 @@ enum class Acierto {
 // Acierto::NumeroYColor. Si el match es de color solamente, devuelve
 // Acierto::Color. Sino devuelve Acierto::Ninguno.
 Acierto acierto(int ranura_de_ruleta, int ranura_de_apuesta) {
-  // TODO utiliza color_de_ranura()
+  if (ranura_de_apuesta == ranura_de_ruleta) {
+    return Acierto::Numero;
+  } else if (color_de_ranura(ranura_de_apuesta) == color_de_ranura(ranura_de_ruleta)) {
+    return Acierto::Color;
+  } else {
+    return Acierto::Ninguno;
+  }
 }
 
 // Esta funcion templatizada permite pasarle un lambda creado en tiempo de
@@ -145,7 +151,7 @@ bool apuesta_es_valida(int apuesta, int disponible) {
               << "Tu dinero actual es: " << format_dinero(disponible)
               << "\nInténtalo de nuevo.\n";
     return false;
-  } else if (apuesta >= 0) {
+  } else if (apuesta <= 0) {
     std::cerr << "Haz introducido una apuesta inválida.\n"
               << "No puedes apostar una cantidad menor o igual a cero.\n"
               << "Intentalo de nuevo.\n";
@@ -252,8 +258,87 @@ obtener_ronda_de_jugador(int n_jugador, const std::array<int, 4> &carteras) {
 }
 
 
+void mostrar_bienvenida() {
+  std::cout << "Bienvenido al juego, cada quien comienza con 10 euros.\n"
+            << "Cada ronda puedes jugar o retirarte. Si pierdes todo estas "
+            << "fuera\n";
+}
+
+template<typename F>
+void para_cada_activo(std::array<bool, 4> &activos,
+                      std::array<Jugador, 4> &jugadores,
+                      const F &f) {
+  for (int i{}; i < activos.size(); ++i) {
+    if (activos[i]) {
+      f(jugadores[i], activos[i]);
+    }
+  }
+}
+
+bool preguntar_si_continua(int n_jugador) {
+  std::string input{};
+  while (true) {
+    std::cout << "Jugador " << n_jugador << ": "
+              << "¿Continúas? (y/n)\n";
+
+    if (!std::getline(std::cin, input))
+      throw std::runtime_error("Error inesperado de IO.");
+    if (input == "y") return true;
+    else if (input == "n") return false;
+    else {
+      std::cerr << "Opcion inválida, debes introducir solamente y o n\n";
+      continue;
+    }
+  }
+}
+
+int girar_rueda(std::uniform_int_distribution<int> &distribution,
+                std::random_device &random_device) {
+  using namespace std::chrono;
+  using namespace std::chrono_literals;
+
+  time_point<system_clock> start{system_clock::now()};
+  time_point<system_clock> end{start + 2s};
+  std::array<char, 4> bars{'|', '/', '-', '\\'};
+  int i{0};
+  while (end < start) {
+    std::cout << "Girando...\nbars[i++ % 4]\n";
+    std::this_thread::sleep_for(50ms);
+  }
+  return distribution(random_device);
+}
+
+void mostrar_resultado(int resultado) {
+  std::cout << "Salio " << resultado << '\n';
+}
+
+void actualizar_jugador_con_resultado(Jugador &jugador, int resultado,
+                                      bool &activo) {
+  auto acierto_jugador {acierto(resultado, jugador.ranura)};
+  if (acierto_jugador == Acierto::Numero) {
+    std::cout << "Felicidades * 35\n";
+    jugador.cartera *= 35;
+  } else if (acierto_jugador == Acierto::Color) {
+    std::cout << "Felicidades * 2\n";
+    jugador.cartera *= 2;
+  } else {
+    std::cout << "Perdiste tu apuesta.\n";
+    jugador.cartera -= jugador.apuesta;
+    if (jugador.cartera == 0) {
+      std::cout << "eliminado\n";
+      activo = false;
+    }
+  }
+}
+
+
+void mostrar_resultado_final(std::array<Jugador, 4> array,
+                             std::array<bool, 4> array1) {
+  std::cout << "chao\n";
+}
+
 int main() {
-  // El numero del jugador sera su indice.
+  // El numero del jugador sera igual a su indice.
   // Todos los jugadores empiezan con 10 euros.
   std::array<Jugador, 4> jugadores{
     Jugador{1, 10, 0, 0},
@@ -278,17 +363,19 @@ int main() {
     // Obtener apuestas y ranuras.
     para_cada_activo(activos, jugadores, [](Jugador &jugador, bool &activo) {
         activo = preguntar_si_continua(jugador.numero);
-        jugador.apuesta = obtener_apuesta(jugador.numero, jugador.cartera);
-        jugador.ranura = obtener_eleccion_ranura(jugador.numero);
+        if (activo) {
+          jugador.apuesta = obtener_apuesta(jugador.numero, jugador.cartera);
+          jugador.ranura = obtener_eleccion_ranura(jugador.numero);
+        }
     });
 
     // Girar la rueda
-    auto resultado_ruleta{girar_rueda()};
+    auto resultado_ruleta{girar_rueda(ruleta, rand)};
     mostrar_resultado(resultado_ruleta);
 
     // Mostrar resultados de la ronda
-    para_cada_activo(activos, jugadores, [](Jugador &jugador, bool &activo) {
-        actualizar_jugador_con_resultado(jugador, resultado, activo);
+    para_cada_activo(activos, jugadores, [=](Jugador &jugador, bool &activo) {
+        actualizar_jugador_con_resultado(jugador, resultado_ruleta, activo);
     });
   }
 
