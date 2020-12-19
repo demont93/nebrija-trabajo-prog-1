@@ -39,6 +39,26 @@
 #include <algorithm>
 #include <random>
 #include <cassert>
+#include <iostream>
+#include <sstream>
+#include <thread>
+#include <chrono>
+
+// Crea un string con el monto en forma de dinero
+// FIXME:
+std::string format_dinero(int dinero) {
+  return std::to_string(dinero) += " euros";
+}
+
+// Estructura basica de un jugador, contiene la informacion basica juntos con
+// las funciones basicas necesarias pertinentes como pedir una apuesta, pedir
+// la eleccion de un color etc.
+struct Jugador {
+  int numero; // Numero de jugador para poder decir jugador 1 o jugador 2.
+  int cartera; // Cuanto dinero tiene el jugador en el momento.
+  int apuesta; // Ultima apuesta hecha por el jugador.
+  int ranura; // Ultimo numero elegido en la apuesta del jugador.
+};
 
 // Enumeracion para evitar usar colores como numero que puede ser confuso.
 enum class ColorRanura {
@@ -92,12 +112,157 @@ Acierto acierto(int ranura_de_ruleta, int ranura_de_apuesta) {
   // TODO utiliza color_de_ranura()
 }
 
+// Esta funcion templatizada permite pasarle un lambda creado en tiempo de
+// compilacion para evitar operaciones innecesarias.
+// Esta funcion permite realizar una operacion sobre cada uno de los jugadores
+// activos (no retirados y con dinero). Por el principio de composicion de
+// funciones, es mejor pasarle todas las operaciones a esta funcion en una sola
+// pasada, en vez de una operacion distinta en cada invocacion. Es decir:
+// Ok: F(x) . F(y) . F(z)
+// Mejor: F(x . y . z)
+// TODO
+//template<typename F>
+//void para_cada_jugador_activo
+
+// Ignora el resto del buffer de caracteres en el istream (cin) luego de pedir
+// algo distinto a una linea.
+// int n;
+// std::cin >> n;
+// ( el input es "234 s \n" )
+// al leer de cin, queda " s \n" en el buffer.
+// al llamar esta funcion el buffer queda asi ""
+// NOTA: no se debe confundir con la funcion std::cin.clear(), que reinicia los
+// flags del objeto iostream.
+void clear_cin() {
+  std::cin.clear();
+  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+// Valida la apuesta de acuerdo al dinero del jugador.
+bool apuesta_es_valida(int apuesta, int disponible) {
+  if (apuesta > disponible) {
+    std::cerr << "Haz introducido una apuesta inválida.\n"
+              << "Tu dinero actual es: " << format_dinero(disponible)
+              << "\nInténtalo de nuevo.\n";
+    return false;
+  } else if (apuesta >= 0) {
+    std::cerr << "Haz introducido una apuesta inválida.\n"
+              << "No puedes apostar una cantidad menor o igual a cero.\n"
+              << "Intentalo de nuevo.\n";
+    return false;
+  } else {
+    return true;
+  }
+}
+
+bool ranura_es_valida(int ranura) {
+  if (ranura <= 0 || ranura > 36) {
+    std::cerr << "Haz introducido un inválido, las opciones para la ruleta son "
+              << "cualquier numero entre 1 y 36 inclusivos.\n"
+              << "Intenta de nuevo.\n";
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// Obtiene un entero a partir de una linea, suponiendo que la linea solo
+// consiste de un numero y espacio opcional al principio y al final.
+int parse_int_de_linea(const std::string &linea) {
+  std::istringstream ss{linea};
+  std::string number_string{};
+  std::string rest{};
+  if (!(ss >> number_string))
+    throw std::runtime_error("No se encontro un numero.");
+  ss >> rest;
+  if (!ss.eof())
+    throw std::runtime_error("El numero no debe estar acompañado de nada más.");
+  return std::stoi(number_string);
+}
+
+void mostrar_mensaje_eleccion_apuesta(int n_jugador) {
+  std::cout << "Jugador " << n_jugador << ", introduce tu apuesta:\n>";
+}
+
+// Obtiene la apuesta de un jugador especifico y valida que la apuesta hecha
+// sea posible de acuerdo al dinero que el jugador tiene.
+// Si la apuesta es invalida, pide al usuario la apuesta nuevamente.
+int obtener_apuesta(int n_jugador, int disponible) {
+  int apuesta;
+  std::string input{};
+  do {
+    mostrar_mensaje_eleccion_apuesta(n_jugador);
+    // Error de lectura del stream y corrupcion del estado interno.
+    if (!(std::getline(std::cin, input)))
+      throw std::runtime_error("Ocurrio un error interno en el buffer.");
+
+    try {
+      apuesta = parse_int_de_linea(input);
+    } catch (const std::invalid_argument &e) {
+      std::cerr << "No se pudo interpretar un entero a partir del input.\n"
+                << "Intentalo de nuevo.\n";
+      continue;
+    } catch (const std::out_of_range &e) {
+      std::cerr << "El numero que introdujiste es demasiado grande.\n"
+                << "Intentalo de nuevo.\n";
+      continue;
+    }
+
+  } while (!apuesta_es_valida(apuesta, disponible));
+  return apuesta;
+}
+
+// Mensaje para pedir la eleccion del jugador de la ruleta.
+void mostrar_mensaje_eleccion_ruleta(int n_jugador) {
+  std::cout << "Jugador " << n_jugador << ", introduce tu el numero "
+            << "de la ruleta que vas a elegir.\nRecuerda que los numeros "
+            << "pares son rojos y los impares negros.\n>";
+}
+
+// Se encarga de pedirle al usuario la ranura que va a elegir y valida
+// la entrada. Si es invalida, la pide de nuevo.
+int obtener_eleccion_ranura(int n_jugador) {
+  assert(n_jugador >= 0 && n_jugador <= 3 && "Solo hay 4 jugadores [0,3].");
+  int numero_elegido;
+  std::string input{};
+  do {
+    mostrar_mensaje_eleccion_ruleta(n_jugador);
+    if (!std::getline(std::cin, input))
+      throw std::runtime_error("Ocurrio un error inesperado.");
+
+    try {
+      numero_elegido = parse_int_de_linea(input);
+    } catch (const std::invalid_argument &e) {
+      std::cerr << "No se pudo interpretar un entero a partir del input.\n"
+                << "Intentalo de nuevo.\n";
+      continue;
+    } catch (const std::out_of_range &e) {
+      std::cerr << "El numero que introdujiste es demasiado grande.\n"
+                << "Intentalo de nuevo.\n";
+      continue;
+    }
+
+  } while (!ranura_es_valida(numero_elegido));
+  return numero_elegido;
+}
+
+int
+obtener_ronda_de_jugador(int n_jugador, const std::array<int, 4> &carteras) {
+  assert(n_jugador >= 0 && n_jugador <= 3 && "Solo hay 4 jugadores [0,3].");
+}
+
+
 int main() {
   // El numero del jugador sera su indice.
   // Todos los jugadores empiezan con 10 euros.
-  std::array<int, 4> carteras{10, 10, 10, 10};
-  // Para hacerlo sencillo me parece mas facil hacer 2 arrays paralelos en vez
-  // de una estructura jugador.
+  std::array<Jugador, 4> jugadores{
+    Jugador{1, 10, 0, 0},
+    Jugador{2, 10, 0, 0},
+    Jugador{3, 10, 0, 0},
+    Jugador{4, 10, 0, 0}
+  };
+  // Guardamos los activos en un array paralelo separado para evitar gastar
+  // memoria innecesaria dentro del struct jugador.
   std::array<bool, 4> activos{true, true, true, true};
 
   // Motor de numeros aleatorios.
@@ -105,22 +270,30 @@ int main() {
   // Ranura puede ser [0,36]
   std::uniform_int_distribution ruleta(0, 36);
 
-  // El banco comienza vacio para calcular si gano o perdio.
-  int banco{0};
-
-  // mostrar bienvenida...
+  // Bienvenida
+  mostrar_bienvenida();
 
   // Loop de rondas
   while (alguien_activo(activos)) {
     // Obtener apuestas y ranuras.
-    // Girar rueda.
-    // simular giro...
-    auto resultado_ruleta{producir_numero_ranura(ruleta, rand)}
-    // Calcular resultados.
-    // reportar resultados...
+    para_cada_activo(activos, jugadores, [](Jugador &jugador, bool &activo) {
+        activo = preguntar_si_continua(jugador.numero);
+        jugador.apuesta = obtener_apuesta(jugador.numero, jugador.cartera);
+        jugador.ranura = obtener_eleccion_ranura(jugador.numero);
+    });
+
+    // Girar la rueda
+    auto resultado_ruleta{girar_rueda()};
+    mostrar_resultado(resultado_ruleta);
+
+    // Mostrar resultados de la ronda
+    para_cada_activo(activos, jugadores, [](Jugador &jugador, bool &activo) {
+        actualizar_jugador_con_resultado(jugador, resultado, activo);
+    });
   }
 
-  // mostrar resultado final...
+  // Resultado final para cada jugador
+  mostrar_resultado_final(jugadores, activos);
 
   return 0;
 }
