@@ -164,7 +164,7 @@ int parse_int_de_linea(const std::string &linea) {
 }
 
 void mostrar_mensaje_eleccion_apuesta(int n_jugador) {
-  std::cout << "Jugador " << n_jugador << ", introduce tu apuesta:\n>";
+  std::cout << "Jugador " << n_jugador << ", introduce tu apuesta:\n> ";
 }
 
 // Obtiene la apuesta de un jugador especifico y valida que la apuesta hecha
@@ -198,7 +198,7 @@ int obtener_apuesta(int n_jugador, int disponible) {
 void mostrar_mensaje_eleccion_ruleta(int n_jugador) {
   std::cout << "Jugador " << n_jugador << ", introduce tu el numero "
             << "de la ruleta que vas a elegir.\nRecuerda que los numeros "
-            << "pares son rojos y los impares negros.\n>";
+            << "pares son rojos y los impares negros.\n> ";
 }
 
 // Se encarga de pedirle al usuario la ranura que va a elegir y valida
@@ -247,7 +247,7 @@ bool preguntar_si_continua(int n_jugador) {
   std::string input{};
   while (true) {
     std::cout << "Jugador " << n_jugador << ": "
-              << "¿Continúas? (y/n)\n";
+              << "¿Continúas? (y/n)\n> ";
 
     if (!std::getline(std::cin, input))
       throw std::runtime_error("Error inesperado de IO.");
@@ -304,7 +304,7 @@ void animar_giro_2_cuadros(const std::string &imagen_1,
   while (system_clock::now() < end) {
     for (int n{}; n < 50; ++n) std::cout << '\n';
     std::cout << (flip ? imagen_1 : imagen_2) << '\n';
-    std::this_thread::sleep_for(100ms);
+    std::this_thread::sleep_for(500ms);
     flip = !flip;
   }
 }
