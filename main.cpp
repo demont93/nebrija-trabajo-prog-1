@@ -44,6 +44,7 @@
 #include <thread>
 #include <chrono>
 #include <fstream>
+#include <ncurses.h>
 
 // Crea un string con el monto en forma de dinero
 // FIXME:
