@@ -226,8 +226,10 @@ int obtener_eleccion_ranura(int n_jugador) {
   return numero_elegido;
 }
 
-void mostrar_bienvenida() {
-  std::cout << "Bienvenido al juego, cada quien comienza con 10 euros.\n"
+// FIXME acomodar texto
+void mostrar_bienvenida(const std::string &banner) {
+  std::cout << banner
+            << "Bienvenido al juego, cada quien comienza con 10 euros.\n"
             << "Cada ronda puedes jugar o retirarte. Si pierdes todo estas "
             << "fuera\n";
 }
@@ -243,7 +245,7 @@ void para_cada_activo(std::array<bool, 4> &activos,
   }
 }
 
-bool preguntar_si_continua(int n_jugador) {
+bool preguntar_si_continua(int n_jugador, const std::string &gallina) {
   std::string input{};
   while (true) {
     std::cout << "Jugador " << n_jugador << ": "
@@ -251,9 +253,12 @@ bool preguntar_si_continua(int n_jugador) {
 
     if (!std::getline(std::cin, input))
       throw std::runtime_error("Error inesperado de IO.");
-    if (input == "y") return true;
-    else if (input == "n") return false;
-    else {
+    if (input == "y") {
+      return true;
+    } else if (input == "n") {
+      std::cout << gallina;
+      return false;
+    } else {
       std::cerr << "Opcion inválida, debes introducir solamente y o n\n";
       continue;
     }
@@ -265,7 +270,9 @@ void mostrar_resultado(int resultado) {
 }
 
 void actualizar_jugador_con_resultado(Jugador &jugador, int resultado,
-                                      bool &activo) {
+                                      bool &activo,
+                                      const std::string& chupon
+) {
   auto acierto_jugador{acierto(resultado, jugador.ranura)};
   if (acierto_jugador == Acierto::Numero) {
     std::cout << "Felicidades * 35\n";
@@ -277,7 +284,9 @@ void actualizar_jugador_con_resultado(Jugador &jugador, int resultado,
     std::cout << "Perdiste tu apuesta.\n";
     jugador.cartera -= jugador.apuesta;
     if (jugador.cartera == 0) {
-      std::cout << "eliminado\n";
+      std::cout << "\n\n" << chupon << "\n\n"
+      // FIXME acomodar este texto
+                << "Eliminado.\n";
       activo = false;
     }
   }
@@ -307,6 +316,7 @@ void animar_giro_2_cuadros(const std::string &imagen_1,
     std::this_thread::sleep_for(500ms);
     flip = !flip;
   }
+  for (int n{}; n < 50; ++n) std::cout << '\n';
 }
 
 int girar_rueda(std::uniform_int_distribution<int> &distribution,
@@ -322,7 +332,7 @@ std::string leer_imagen(std::ifstream &in) {
   std::string ret_val{};
   char c;
   if (in.is_open()) {
-    while (in.get(c) && c != '~')
+    while (in.get(c) && c != '@')
       ret_val.push_back(c);
     in.ignore();
   } else {
@@ -355,18 +365,20 @@ int main() {
   const auto banner{leer_imagen(stencil_file)};
   const auto ruleta_ascii_1{leer_imagen(stencil_file)};
   const auto ruleta_ascii_2{leer_imagen(stencil_file)};
+  const auto chupon{leer_imagen(stencil_file)};
+  const auto gallina{leer_imagen(stencil_file)};
   stencil_file.close();
   const auto imagen_1{banner + ruleta_ascii_1};
   const auto imagen_2{banner + ruleta_ascii_2};
 
   // Bienvenida
-  mostrar_bienvenida();
+  mostrar_bienvenida(banner);
 
   // Loop de rondas
   while (alguien_activo(activos)) {
     // Obtener apuestas y ranuras.
-    para_cada_activo(activos, jugadores, [](Jugador &jugador, bool &activo) {
-      activo = preguntar_si_continua(jugador.numero);
+    para_cada_activo(activos, jugadores, [&](Jugador &jugador, bool &activo) {
+      activo = preguntar_si_continua(jugador.numero, gallina);
       if (activo) {
         jugador.apuesta = obtener_apuesta(jugador.numero, jugador.cartera);
         jugador.ranura = obtener_eleccion_ranura(jugador.numero);
@@ -380,7 +392,8 @@ int main() {
 
       // Mostrar resultados de la ronda
       para_cada_activo(activos, jugadores, [=](Jugador &jugador, bool &activo) {
-        actualizar_jugador_con_resultado(jugador, resultado_ruleta, activo);
+        actualizar_jugador_con_resultado(jugador, resultado_ruleta, activo,
+                                         chupon);
       });
     }
   }
