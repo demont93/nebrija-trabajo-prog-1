@@ -43,6 +43,7 @@
 #include <sstream>
 #include <thread>
 #include <chrono>
+#include <fstream>
 
 // Crea un string con el monto en forma de dinero
 // FIXME:
@@ -68,7 +69,8 @@ enum class ColorRanura {
 
 // Le pasas un array de bools y te dice si alguno esta activo.
 bool alguien_activo(const std::array<bool, 4> &activos) {
-  return std::ranges::any_of(activos, [](const auto &a) { return a; });
+  return std::any_of(activos.begin(), activos.end(),
+                     [](const auto &a) { return a; });
 }
 
 // convierte de forma uniforme los colores a numeros
@@ -188,7 +190,6 @@ int obtener_apuesta(int n_jugador, int disponible) {
                 << "Intentalo de nuevo.\n";
       continue;
     }
-
   } while (!apuesta_es_valida(apuesta, disponible));
   return apuesta;
 }
@@ -221,7 +222,6 @@ int obtener_eleccion_ranura(int n_jugador) {
                 << "Intentalo de nuevo.\n";
       continue;
     }
-
   } while (!ranura_es_valida(numero_elegido));
   return numero_elegido;
 }
@@ -260,22 +260,6 @@ bool preguntar_si_continua(int n_jugador) {
   }
 }
 
-int girar_rueda(std::uniform_int_distribution<int> &distribution,
-                std::random_device &random_device) {
-  using namespace std::chrono;
-  using namespace std::chrono_literals;
-
-  time_point<system_clock> end{system_clock::now() + 2s};
-  std::array<char, 4> bars{'|', '/', '-', '\\'};
-  int i{0};
-  while (system_clock::now() < end) {
-    for (int n{}; n < 50; ++n) std::cout << '\n';
-    std::cout << "Girando...\n" << bars[i++ % 4] << '\n';
-    std::this_thread::sleep_for(100ms);
-  }
-  return producir_numero_ranura(distribution, random_device);
-}
-
 void mostrar_resultado(int resultado) {
   std::cout << "Salio " << resultado << '\n';
 }
@@ -299,7 +283,6 @@ void actualizar_jugador_con_resultado(Jugador &jugador, int resultado,
   }
 }
 
-
 // Debe mostrar los ganadores y perdedores + el estado final de la banca.
 void mostrar_resultado_final(const std::array<Jugador, 4> &jugadores,
                              const std::array<bool, 4> &activos) {
@@ -308,6 +291,44 @@ void mostrar_resultado_final(const std::array<Jugador, 4> &jugadores,
     banca -= jugador.cartera - 10;
   std::cout << "Banco quedó con un saldo de " << format_dinero(banca) << '\n'
             << "chao\n";
+}
+
+// Animacion girar ruleta
+void animar_giro_2_cuadros(const std::string &imagen_1,
+                           const std::string &imagen_2) {
+  using namespace std::chrono;
+  using namespace std::chrono_literals;
+
+  time_point<system_clock> end{system_clock::now() + 3s};
+  bool flip{true};
+  while (system_clock::now() < end) {
+    for (int n{}; n < 50; ++n) std::cout << '\n';
+    std::cout << (flip ? imagen_1 : imagen_2) << '\n';
+    std::this_thread::sleep_for(100ms);
+    flip = !flip;
+  }
+}
+
+int girar_rueda(std::uniform_int_distribution<int> &distribution,
+                std::random_device &random_device,
+                const std::string &imagen_1,
+                const std::string &imagen_2
+) {
+  animar_giro_2_cuadros(imagen_1, imagen_2);
+  return producir_numero_ranura(distribution, random_device);
+}
+
+std::string leer_imagen(std::ifstream &in) {
+  std::string ret_val{};
+  char c;
+  if (in.is_open()) {
+    while (in.get(c) && c != '~')
+      ret_val.push_back(c);
+    in.ignore();
+  } else {
+    throw std::runtime_error("No pude abrir el file.");
+  }
+  return ret_val;
 }
 
 int main() {
@@ -328,6 +349,16 @@ int main() {
   // Ranura puede ser [0,36]
   std::uniform_int_distribution ruleta(0, 36);
 
+  // Cargar imagenes
+  std::ifstream stencil_file("roulette.txt");
+  // FIXME handle io errors
+  const auto banner{leer_imagen(stencil_file)};
+  const auto ruleta_ascii_1{leer_imagen(stencil_file)};
+  const auto ruleta_ascii_2{leer_imagen(stencil_file)};
+  stencil_file.close();
+  const auto imagen_1{banner + ruleta_ascii_1};
+  const auto imagen_2{banner + ruleta_ascii_2};
+
   // Bienvenida
   mostrar_bienvenida();
 
@@ -335,21 +366,21 @@ int main() {
   while (alguien_activo(activos)) {
     // Obtener apuestas y ranuras.
     para_cada_activo(activos, jugadores, [](Jugador &jugador, bool &activo) {
-        activo = preguntar_si_continua(jugador.numero);
-        if (activo) {
-          jugador.apuesta = obtener_apuesta(jugador.numero, jugador.cartera);
-          jugador.ranura = obtener_eleccion_ranura(jugador.numero);
-        }
+      activo = preguntar_si_continua(jugador.numero);
+      if (activo) {
+        jugador.apuesta = obtener_apuesta(jugador.numero, jugador.cartera);
+        jugador.ranura = obtener_eleccion_ranura(jugador.numero);
+      }
     });
 
     // Girar la rueda
     if (alguien_activo(activos)) {
-      auto resultado_ruleta{girar_rueda(ruleta, rand)};
+      auto resultado_ruleta{girar_rueda(ruleta, rand, imagen_1, imagen_2)};
       mostrar_resultado(resultado_ruleta);
 
       // Mostrar resultados de la ronda
       para_cada_activo(activos, jugadores, [=](Jugador &jugador, bool &activo) {
-          actualizar_jugador_con_resultado(jugador, resultado_ruleta, activo);
+        actualizar_jugador_con_resultado(jugador, resultado_ruleta, activo);
       });
     }
   }
