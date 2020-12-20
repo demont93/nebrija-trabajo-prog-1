@@ -138,6 +138,8 @@ bool apuesta_es_valida(int apuesta, int disponible) {
   }
 }
 
+// Se asegura de que una ranura sea valida, es decir que no caiga fuera de la
+// ruleta.
 bool ranura_es_valida(int ranura) {
   if (ranura <= 0 || ranura > 36) {
     std::cerr << "Haz introducido un inválido, las opciones para la ruleta son "
@@ -163,6 +165,7 @@ int parse_int_de_linea(const std::string &linea) {
   return std::stoi(number_string);
 }
 
+// Prompt de la apuesta al usuario por stdout.
 void mostrar_mensaje_eleccion_apuesta(int n_jugador) {
   std::cout << "Jugador " << n_jugador << ", introduce tu apuesta:\n> ";
 }
@@ -194,7 +197,7 @@ int obtener_apuesta(int n_jugador, int disponible) {
   return apuesta;
 }
 
-// Mensaje para pedir la eleccion del jugador de la ruleta.
+// Prompt de numero de la ruleta al usuario por stdout.
 void mostrar_mensaje_eleccion_ruleta(int n_jugador) {
   std::cout << "Jugador " << n_jugador << ", introduce tu el numero "
             << "de la ruleta que vas a elegir.\nRecuerda que los numeros "
@@ -228,7 +231,7 @@ int obtener_eleccion_ranura(int n_jugador) {
 
 // FIXME acomodar texto
 void mostrar_bienvenida(const std::string &banner) {
-  std::cout << banner
+  std::cout << "\n\n" << banner << "\n\n"
             << "Bienvenido al juego, cada quien comienza con 10 euros.\n"
             << "Cada ronda puedes jugar o retirarte. Si pierdes todo estas "
             << "fuera\n";
@@ -237,14 +240,15 @@ void mostrar_bienvenida(const std::string &banner) {
 template<typename F>
 void para_cada_activo(std::array<bool, 4> &activos,
                       std::array<Jugador, 4> &jugadores,
-                      const F &f) {
-  for (int i{}; i < activos.size(); ++i) {
-    if (activos[i]) {
-      f(jugadores[i], activos[i]);
-    }
-  }
+                      const F &f
+) {
+  for (int i{}; i < activos.size(); ++i)
+    if (activos[i]) f(jugadores[i], activos[i]);
 }
 
+// Pregunta al usuario con un prompt si continua el juego o se retira, muestra
+// una imagen por stdout si se retira.
+// Valida las entradas.
 bool preguntar_si_continua(int n_jugador, const std::string &gallina) {
   std::string input{};
   while (true) {
@@ -265,13 +269,17 @@ bool preguntar_si_continua(int n_jugador, const std::string &gallina) {
   }
 }
 
+// Muestra el resultado de girar la ruleta, solamente es un string format.
 void mostrar_resultado(int resultado) {
   std::cout << "Salio " << resultado << '\n';
 }
 
+// Determina si el jugador acerto su apuesta y que tipo de acierto tuvo.
+// Luego actualiza los valores del jugador de acuerdo al tipo de acierto.
+// Muestra un mensaje por stdout de acuerdo a su actualizacion.
 void actualizar_jugador_con_resultado(Jugador &jugador, int resultado,
                                       bool &activo,
-                                      const std::string& chupon
+                                      const std::string &chupon
 ) {
   auto acierto_jugador{acierto(resultado, jugador.ranura)};
   if (acierto_jugador == Acierto::Numero) {
@@ -285,7 +293,7 @@ void actualizar_jugador_con_resultado(Jugador &jugador, int resultado,
     jugador.cartera -= jugador.apuesta;
     if (jugador.cartera == 0) {
       std::cout << "\n\n" << chupon << "\n\n"
-      // FIXME acomodar este texto
+                // FIXME acomodar este texto
                 << "Eliminado.\n";
       activo = false;
     }
@@ -319,6 +327,8 @@ void animar_giro_2_cuadros(const std::string &imagen_1,
   for (int n{}; n < 50; ++n) std::cout << '\n';
 }
 
+// Se encarga de producir el valor aleatorio a partir de un generador
+// y un rango. Adicionalmente muestra la animacion de girar la ruleta.
 int girar_rueda(std::uniform_int_distribution<int> &distribution,
                 std::random_device &random_device,
                 const std::string &imagen_1,
@@ -328,6 +338,8 @@ int girar_rueda(std::uniform_int_distribution<int> &distribution,
   return producir_numero_ranura(distribution, random_device);
 }
 
+// Lee un archivo con las imagenes ASCII. Para hacerlo sencillo, cada imagen
+// esta delimitada por el caracter '@'.
 std::string leer_imagen(std::ifstream &in) {
   std::string ret_val{};
   char c;
