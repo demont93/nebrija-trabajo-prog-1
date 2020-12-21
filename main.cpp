@@ -17,6 +17,7 @@
 /// 1. Obtener todos los turnos.
 /// 2. Girar la ruleta.
 /// 3. Mostrar resultados.
+/// 4. Actualiza jugadores activos
 ///
 /// Mostrar por pantalla al finalizar:
 /// 1. Cuanto ha ganado/perdido la banca.
@@ -24,7 +25,8 @@
 ///
 /// Etapas de cada turno:
 /// Etapa 1: Mostrar data inicial del jugador actual.
-/// Etapa 2: Pedir casilla o aceptar retiro.
+/// Etapa 2: Preguntar si quiere continuar.
+/// Etapa 2: Si continua, pedir apuesta y ranura.
 ///
 /// Mostrar por pantalla en cada etapa de cada turno:
 /// Etapa 1:
@@ -199,7 +201,7 @@ int obtener_apuesta(int n_jugador, int disponible) {
 
 // Prompt de numero de la ruleta al usuario por stdout.
 void mostrar_mensaje_eleccion_ruleta(int n_jugador) {
-  std::cout << "Jugador " << n_jugador << ", introduce tu el numero "
+  std::cout << "Jugador " << n_jugador << ", introduce el numero "
             << "de la ruleta que vas a elegir.\nRecuerda que los numeros "
             << "pares son rojos y los impares negros.\n> ";
 }
