@@ -45,6 +45,7 @@
 #include <chrono>
 #include <fstream>
 #include <ncurses.h>
+#include "Game.h"
 
 // Crea un string con el monto en forma de dinero
 // FIXME:
@@ -354,6 +355,64 @@ std::string leer_imagen(std::ifstream &in) {
   return ret_val;
 }
 
+void game() {
+  // El numero del jugador sera igual a su indice.
+  // Todos los jugadores empiezan con 10 euros.
+  std::array<Jugador, 4> jugadores{
+    Jugador{1, 10, 0, 0},
+    Jugador{2, 10, 0, 0},
+    Jugador{3, 10, 0, 0},
+    Jugador{4, 10, 0, 0}
+  };
+  // Guardamos los activos en un array paralelo separado para evitar gastar
+  // memoria innecesaria dentro del struct jugador.
+  std::array<bool, 4> activos{true, true, true, true};
+
+  // Motor de numeros aleatorios.
+  std::random_device rand{};
+  // Ranura puede ser [0,36]
+  std::uniform_int_distribution ruleta(0, 36);
+
+  // Cargar imagenes
+  std::ifstream stencil_file("roulette.txt");
+  // FIXME handle io errors
+  const auto banner{leer_imagen(stencil_file)};
+  const auto ruleta_ascii_1{leer_imagen(stencil_file)};
+  const auto ruleta_ascii_2{leer_imagen(stencil_file)};
+  const auto chupon{leer_imagen(stencil_file)};
+  const auto gallina{leer_imagen(stencil_file)};
+  stencil_file.close();
+  const auto imagen_1{banner + ruleta_ascii_1};
+  const auto imagen_2{banner + ruleta_ascii_2};
+
+  // bool running
+  bool game_running{true};
+
+  auto game{std::make_unique<Game>()};
+  game->run();
+}
+
+int main2() {
+  try {
+    game();
+  } catch (const std::runtime_error& e) {
+    std::cerr << e.what() << '\n';
+    endwin();
+  } catch (...) {
+    endwin();
+  }
+  return 0;
+};
+
+
+
+
+
+
+
+
+
+
 int main() {
   // El numero del jugador sera igual a su indice.
   // Todos los jugadores empiezan con 10 euros.
@@ -383,6 +442,11 @@ int main() {
   stencil_file.close();
   const auto imagen_1{banner + ruleta_ascii_1};
   const auto imagen_2{banner + ruleta_ascii_2};
+
+  // Init ncurses
+  initscr();
+  cbreak();
+  keypad(stdscr, true);
 
   // Bienvenida
   mostrar_bienvenida(banner);
