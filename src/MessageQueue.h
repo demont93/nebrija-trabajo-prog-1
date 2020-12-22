@@ -21,5 +21,5 @@ class MessageQueue {
   bool empty();
  private:
   std::deque<Message> queue{};
-  int counter;
+  int counter{0};
 };

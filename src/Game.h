@@ -3,11 +3,17 @@
 #include <memory>
 #include <optional>
 #include <ncurses.h>
+#include <map>
+#include <string>
+#include <vector>
 #include "state/State.h"
 #include "MessageQueue.h"
+#include "StateMachine.h"
 
 class Game {
  public:
+  std::map<std::string, std::vector<std::string>> images_map;
+
   Game();
   ~Game();
   void run();
@@ -22,6 +28,6 @@ class Game {
  private:
   MessageQueue message_queue{};
   bool running{true};
-  std::unique_ptr<State<Game>> state{nullptr};
+  FiniteStateMachine<Game> state{};
   char c{'\0'};
 };

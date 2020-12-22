@@ -13,8 +13,11 @@ void MessageQueue::pop() {
 }
 
 void MessageQueue::render() {
-  auto &el{queue.front()};
-  mvaddstr(el.y, el.x, el.message.c_str());
+  if (!empty()) {
+    auto &el{queue.front()};
+    erase();
+    mvaddstr(el.y, el.x, el.message.c_str());
+  }
 }
 
 bool MessageQueue::empty() {

@@ -1,38 +1,48 @@
 #include <chrono>
 #include <thread>
+#include <fstream>
 #include "Game.h"
 #include "state/State.h"
 #include "state/Impl.h"
+#include "Utility.h"
 
 Game::Game() {
   initscr();
   cbreak();
   nodelay(stdscr, true);
-  std::unique_ptr<State<Game>> new_state{static_cast<State<Game>*>(new Menu())};
-  change_state(std::move(new_state));
+  noecho();
+  curs_set(0);
+  std::ifstream stencil_file{"../roulette.txt"};
+  images_map = load_image_map(stencil_file);
+  stencil_file.close();
+  change_state(std::make_unique<Menu>());
 }
 
 Game::~Game() {
+  curs_set(1);
+  echo();
+  nodelay(stdscr, false);
+  nocbreak();
   endwin();
 }
 
 void Game::process_input() {
   c = getch();
-  state->process_input(c, *this);
+  if (c != ERR)
+    state.process_input(c, *this);
 }
 
 void Game::update() {
-  state->update(*this);
+  state.update(*this);
 }
 
 void Game::render() {
-  state->render();
+  state.render();
 }
 
 void Game::change_state(std::unique_ptr<State<Game>> &&game_state) {
-  state->on_exit(*this);
-  state.swap(game_state);
-  state->on_enter(*this, game_state.get());
+  state.change_state(std::forward<std::unique_ptr<State<Game>>>(game_state),
+                     *this);
 }
 
 void Game::run() {
@@ -45,10 +55,10 @@ void Game::run() {
       update();
       render();
     }
+    refresh();
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
   }
-  state->on_exit(*this);
 }
 
 bool &Game::get_condicion_salida() {

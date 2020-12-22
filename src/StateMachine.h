@@ -13,6 +13,8 @@ class FiniteStateMachine {
   void change_state(std::unique_ptr<State<T>> &&new_state,
                     T &context);
   void update(T& context);
+  void process_input(char c, T& context);
+  void render();
   bool is_done();
 
  private:
@@ -26,7 +28,7 @@ FiniteStateMachine<T>::FiniteStateMachine(std::unique_ptr<State<T>> &&state)
 template<typename T>
 void FiniteStateMachine<T>::change_state(std::unique_ptr<State<T>> &&new_state,
                                          T &context) {
-  if (state != nullptr) state->on_exit(context);
+  if (!is_done()) state->on_exit(context);
   state.swap(new_state);
   state->on_enter(context, new_state.get());
 }
@@ -39,6 +41,16 @@ void FiniteStateMachine<T>::update(T& context) {
 template<typename T>
 bool FiniteStateMachine<T>::is_done() {
   return state == nullptr;
+}
+
+template<typename T>
+void FiniteStateMachine<T>::render() {
+  if (!is_done()) state->render();
+}
+
+template<typename T>
+void FiniteStateMachine<T>::process_input(char c, T &context) {
+  state->process_input(c, context);
 }
 
 template<typename T>
@@ -84,8 +96,10 @@ template<typename T>
 class StateQueueMachine {
  public:
   void enqueue(std::unique_ptr<FinishingState<T>> &&state, T &context);
-  [[nodiscard]] bool empty() const;
+  [[nodiscard]] bool is_done() const;
   void update(T &context);
+  void process_input(char c, T& context);
+  void render();
 
  private:
   std::queue<std::unique_ptr<FinishingState<T>>> queue{};
@@ -99,12 +113,11 @@ void StateQueueMachine<T>::enqueue(std::unique_ptr<FinishingState<T>> &&state, T
 
 template<typename T>
 void StateQueueMachine<T>::update(T &context) {
-  if (empty()) return;
   if (queue.front()->is_done()) {
     queue.front()->on_exit(context);
     auto popped{std::move(queue.front())};
     queue.pop();
-    if (!empty()) {
+    if (!is_done()) {
       queue.front()->on_enter(popped.get(), context);
       queue.front()->update(context);
     }
@@ -114,6 +127,16 @@ void StateQueueMachine<T>::update(T &context) {
 }
 
 template<typename T>
-bool StateQueueMachine<T>::empty() const {
+bool StateQueueMachine<T>::is_done() const {
   return queue.empty();
+}
+
+template<typename T>
+void StateQueueMachine<T>::process_input(char c, T &context) {
+  queue.front()->process_input(c, context);
+}
+
+template<typename T>
+void StateQueueMachine<T>::render() {
+  if (!is_done()) queue.front()->render();
 }

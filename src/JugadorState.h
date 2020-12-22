@@ -1,29 +1,41 @@
 #pragma once
 
-#include "Jugador.h"
 #include "state/Impl.h"
+#include "RondasState.h"
 
-class PreguntaSeRetira : public State<Jugador> {
+class PreguntaSeRetira : public State<Turnos> {
  public:
-  void on_enter(Jugador &context, State *from) override;
-  void process_input(char c, Jugador &context) override;
-  void update(Jugador &context) override;
+  void on_enter(Turnos &context, State *from) override;
+  void process_input(char c, Turnos &context) override;
+  void update(Turnos &context) override;
   void render() override;
-  void on_exit(Jugador &context) override;
- private:
-  std::unique_ptr<AskYesOrNo<Jugador>> ask {nullptr};
-};
-
-class PreguntaApuesta : public State<Jugador> {
- public:
-  void on_enter(Jugador &context, State *from) override;
-  void process_input(char c, Jugador &context) override;
-  void update(Jugador &context) override;
-  void render() override;
-  void on_exit(Jugador &context) override;
-  void enqueue_state(std::unique_ptr<FinishingState<Jugador>>&& new_state, Jugador &context);
+  void on_exit(Turnos &context) override;
 
  private:
-  StateQueueMachine<Jugador> queue_machine{};
+  Jugador *jugador{nullptr};
+  AskYesOrNo<Turnos> ask {"Continuas?"};
 };
 
+class PreguntaApuesta : public State<Turnos> {
+ public:
+  void on_enter(Turnos &context, State *from) override;
+  void process_input(char c, Turnos &context) override;
+  void update(Turnos &context) override;
+  void render() override;
+  void on_exit(Turnos &context) override;
+ private:
+  AskInt<Turnos> ask{};
+  int apuesta{};
+};
+
+class PreguntaNumero : public State<Turnos> {
+ public:
+  void on_enter(Turnos &context, State *from) override;
+  void process_input(char c, Turnos &context) override;
+  void update(Turnos &context) override;
+  void render() override;
+  void on_exit(Turnos &context) override;
+ private:
+  AskInt<Turnos> ask{};
+  int numero{};
+};

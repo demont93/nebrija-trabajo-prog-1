@@ -1,9 +1,10 @@
-add_executable(
-        ruleta main.cpp state/State.h Utility.h Game.h Game.cpp
+add_executable(ruleta
+        main.cpp state/State.h Utility.h Game.h Game.cpp
         MessageQueue.cpp MessageQueue.h StateMachine.cpp
-        StateMachine.h Update.h Jugador.cpp Jugador.h JugadorState.cpp
-        JugadorState.h state/Impl.h state/Impl.cpp
-)
+        StateMachine.h JugadorState.cpp
+        JugadorState.h state/Impl.h state/Impl.cpp RondasState.cpp
+        RondasState.h
+        Utility.cpp)
 
 target_link_libraries(ruleta ncurses)
 
