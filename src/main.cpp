@@ -42,8 +42,6 @@
 #include <random>
 #include <cassert>
 #include <iostream>
-#include <sstream>
-#include <thread>
 #include <chrono>
 #include <fstream>
 #include <string_view>
@@ -72,8 +70,7 @@ struct Jugador
 {
   int id; // ID <- [1,2,3,4]
   int cartera; // Cuanto dinero tiene el jugador en el momento.
-  int apuesta; // Ultima apuesta hecha por el jugador.
-  int ranura; // Ultimo id elegido en la apuesta del jugador.
+  Apuesta apuesta; // Ultima apuesta hecha por el jugador.
 };
 
 // Enumeracion para evitar usar colores como id que puede ser confuso.
@@ -86,8 +83,8 @@ enum class ColorRanura
 // Le pasas un array de bools y te dice si alguno esta activo.
 bool alguien_activo(const std::array<bool, 4> &activos)
 {
-  return std::any_of(activos.begin(), activos.end(), [](const auto &a)
-  { return a; });
+  return std::any_of(activos.begin(), activos.end(),
+                     [](const auto &a) { return a; });
 }
 
 // convierte de forma uniforme los colores a numeros
@@ -108,16 +105,6 @@ ColorRanura color_de_ranura(int n)
   return numero_a_color(n % 2);
 }
 
-// Producir una ranura, hay que tener cuidado de pasar la distribucion correcta.
-int producir_numero_ranura(std::uniform_int_distribution<int> &dist,
-                           std::random_device &rand)
-{
-  auto ret_val{dist(rand)};
-  assert(ret_val >= 0 && ret_val <= 36 &&
-         "Las ranuras solo pertenecen al rango [0,36]");
-  return ret_val;
-}
-
 // Los tipos posibles de acierto entre la apuesta del jugador y el resultado de
 // la ruleta.
 enum class Acierto
@@ -134,16 +121,12 @@ enum class Acierto
 Acierto acierto(int ranura_de_ruleta, int ranura_de_apuesta)
 {
   if (ranura_de_apuesta == ranura_de_ruleta)
-  {
     return Acierto::Numero;
-  } else if (color_de_ranura(ranura_de_apuesta) ==
-             color_de_ranura(ranura_de_ruleta))
-  {
+  else if (color_de_ranura(ranura_de_apuesta) ==
+           color_de_ranura(ranura_de_ruleta))
     return Acierto::Color;
-  } else
-  {
+  else
     return Acierto::Ninguno;
-  }
 }
 
 // Valida la apuesta de acuerdo al dinero del jugador.
@@ -186,8 +169,7 @@ bool ranura_es_valida(int ranura)
 
 std::string_view trim(const std::string &str)
 {
-  auto isnotspace = [](int a)
-  { return !isspace(a); };
+  auto isnotspace = [](int a) { return !isspace(a); };
   auto start{std::ranges::find_if(str, isnotspace)};
   auto rstart{
     std::find_if(str.rbegin(), std::make_reverse_iterator(start), isnotspace)};
@@ -310,14 +292,14 @@ void mostrar_bienvenida(const std::string &banner)
 }
 
 template<typename F>
-requires std::invocable<F, Jugador &> &&
-         std::same_as<std::invoke_result_t<F, Jugador &>, bool>
+requires std::invocable<F, Jugador &, bool &> &&
+         std::same_as<std::invoke_result_t<F, Jugador &, bool &>, void>
 void para_cada_activo(std::array<bool, 4> &activos,
                       std::array<Jugador, 4> &jugadores,
                       const F &f)
 {
   for (int i{}; i < activos.size(); ++i)
-    if (activos[i]) jugadores[i] = f(jugadores[i], activos[i]);
+    if (activos[i]) f(jugadores[i], activos[i]);
 }
 
 // Pregunta al usuario con un prompt si continua el juego o se retira, muestra
@@ -344,38 +326,44 @@ bool jugador_continua(int n_jugador)
 }
 
 // Muestra el resultado de girar la ruleta, solamente es un string format.
-void mostrar_resultado(int resultado)
+void mostrar_resultado_ultimo_giro(int resultado)
 {
   std::cout << "Salio " << resultado << '\n';
 }
 
+struct AnimacionesDeEtapaResultados
+{
+  Animacion acierto_color;
+  Animacion acierto_numero;
+  Animacion acierto_ninguno;
+  Animacion eliminado;
+};
+
 // Determina si el jugador acerto su apuesta y que tipo de acierto tuvo.
 // Luego actualiza los valores del jugador de acuerdo al tipo de acierto.
-// Muestra un mensaje por stdout de acuerdo a su actualizacion.
-// FIXME: areglar api no homogenea
-// FIXME: activo no debe ser una referencia.
-void actualizar_jugador_con_resultado(Jugador &jugador, int resultado,
-                                      bool &activo,
-                                      const std::string &chupon)
+// Muestra una animacion de acuerdo al resultado.
+void etapa_de_resultados(
+  Jugador &jugador,
+  int resultado,
+  bool &activo,
+  const AnimacionesDeEtapaResultados &animaciones)
 {
-  auto acierto_jugador{acierto(resultado, jugador.ranura)};
+  auto acierto_jugador{acierto(resultado, jugador.apuesta.ranura)};
   if (acierto_jugador == Acierto::Numero)
   {
-    std::cout << "Felicidades * 35\n";
     jugador.cartera *= 35;
+    animar(animaciones.acierto_numero);
   } else if (acierto_jugador == Acierto::Color)
   {
-    std::cout << "Felicidades * 2\n";
     jugador.cartera *= 2;
+    animar(animaciones.acierto_color);
   } else
   {
-    std::cout << "Perdiste tu apuesta.\n";
-    jugador.cartera -= jugador.apuesta;
+    jugador.cartera -= jugador.apuesta.precio;
+    animar(animaciones.acierto_ninguno);
     if (jugador.cartera == 0)
     {
-      std::cout << "\n\n" << chupon << "\n\n"
-                // FIXME acomodar este texto
-                << "Eliminado.\n";
+      animar(animaciones.eliminado);
       activo = false;
     }
   }
@@ -391,12 +379,6 @@ void mostrar_resultado_final(const std::array<Jugador, 4> &jugadores,
   std::cout << "Banco quedó con un saldo de " << format_dinero(banca) << '\n'
             << "chao\n";
 }
-
-// Se encarga de producir el valor aleatorio a partir de un generador
-// y un rango.
-inline int girar_rueda(std::uniform_int_distribution<int> &distribution,
-                       std::random_device &random_device)
-{ return producir_numero_ranura(distribution, random_device); }
 
 // Lee un archivo con las imagenes ASCII. Para hacerlo sencillo, cada imagen
 // esta delimitada por el caracter '@'.
@@ -421,65 +403,90 @@ int program()
   // El id del jugador sera igual a su indice.
   // Todos los jugadores empiezan con 10 euros.
   std::array<Jugador, 4> jugadores{
-    Jugador{1, 10, 0, 0},
-    Jugador{2, 10, 0, 0},
-    Jugador{3, 10, 0, 0},
-    Jugador{4, 10, 0, 0}
+    Jugador{.id = 1, .cartera = 10, .apuesta = {}},
+    Jugador{.id = 2, .cartera = 10, .apuesta = {}},
+    Jugador{.id = 3, .cartera = 10, .apuesta = {}},
+    Jugador{.id = 4, .cartera = 10, .apuesta = {}},
   };
-  // Guardamos los activos en un array paralelo separado para evitar gastar
-  // memoria innecesaria dentro del struct jugador.
   std::array<bool, 4> activos{true, true, true, true};
 
   // Motor de numeros aleatorios.
   std::random_device rand{};
   // Ranura puede ser [0,36]
   std::uniform_int_distribution ruleta(0, 36);
+  // generador_random_ruleta
+  auto generador_random_ruleta{[&]() { return ruleta(rand); }};
 
   // Cargar imagenes
   std::ifstream stencil_file("roulette.txt");
   // FIXME handle io errors
-  const auto banner{leer_imagen(stencil_file)};
-  const auto ruleta_ascii_1{leer_imagen(stencil_file)};
-  const auto ruleta_ascii_2{leer_imagen(stencil_file)};
-  const auto chupon{leer_imagen(stencil_file)};
-  const auto gallina{leer_imagen(stencil_file)};
+  auto banner{leer_imagen(stencil_file)};
+  auto ruleta_ascii_1{leer_imagen(stencil_file)};
+  auto ruleta_ascii_2{leer_imagen(stencil_file)};
+  auto chupon{leer_imagen(stencil_file)};
+  auto gallina{leer_imagen(stencil_file)};
   stencil_file.close();
-  const auto imagen_1{banner + ruleta_ascii_1};
-  const auto imagen_2{banner + ruleta_ascii_2};
+
+  auto imagen_1{banner + ruleta_ascii_1};
+  auto imagen_2{banner + ruleta_ascii_2};
+
+  auto animacion_espera_resultado{Animacion
+    {
+      .data = {std::move(imagen_1), std::move(imagen_2)},
+      .interval = std::chrono::milliseconds(500),
+      .times = 4
+    }};
+  auto animacion_se_retira{crear_animacion_default(std::move(gallina))};
+  auto animacion_eliminado{crear_animacion_default(std::move(chupon))};
+  auto animacion_acierta_color{
+    crear_animacion_default("\nAcertaste al color.\n")};
+  auto animacion_acierta_numero{
+    crear_animacion_default("\nAcertaste al número.\n")};
+  auto animacion_no_acierto{crear_animacion_default("\nPerdiste.\n")};
+  AnimacionesDeEtapaResultados animaciones_de_etapa_resultados
+    {
+      .acierto_color = std::move(animacion_acierta_color),
+      .acierto_numero = std::move(animacion_acierta_numero),
+      .acierto_ninguno = std::move(animacion_no_acierto),
+      .eliminado = std::move(animacion_eliminado)
+    };
 
   mostrar_bienvenida(banner);
 
   // Loop de rondas
   while (alguien_activo(activos))
   {
-    // Obtener apuestas y ranuras.
-    para_cada_activo(activos, jugadores, [&](Jugador &jugador)
+    // Obtener apuestas.
+    para_cada_activo(activos, jugadores, [&](Jugador &jugador, bool &activo)
     {
       if (jugador_continua(jugador.id))
       {
-        jugador.apuesta = obtener_apuesta(jugador.id, jugador.cartera);
-        jugador.ranura = obtener_eleccion_ranura(jugador.id);
-        return true;
+        jugador.apuesta = Apuesta
+          {
+            .precio = obtener_apuesta(jugador.id, jugador.cartera),
+            .ranura = obtener_eleccion_ranura(jugador.id),
+          };
+        activo = true;
       } else
       {
-        mostrar_imagen(gallina);
-        return false;
+        animar(animacion_se_retira);
+        activo = false;
       }
     });
 
     // Girar la rueda
     if (alguien_activo(activos))
     {
-      auto resultado_ruleta{girar_rueda(ruleta, rand)};
-      animacion({imagen_1, imagen_2}, std::chrono::milliseconds(500), 8);
-      mostrar_resultado(resultado_ruleta);
+      auto resultado_ruleta{generador_random_ruleta()};
+      animar(animacion_espera_resultado);
 
-      // Mostrar resultados de la ronda
-      para_cada_activo(activos, jugadores, [=](Jugador &jugador)
+      mostrar_resultado_ultimo_giro(resultado_ruleta);
+
+      // Actualizar y mostrar resultados de cada apuesta
+      para_cada_activo(activos, jugadores, [=](Jugador &jugador, bool &activo)
       {
-        // FIXME: argumentos no son homogeneos
-        actualizar_jugador_con_resultado(jugador, resultado_ruleta, activo,
-                                         chupon);
+        etapa_de_resultados(jugador, resultado_ruleta, activo,
+                            animaciones_de_etapa_resultados);
       });
     }
   }

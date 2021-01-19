@@ -6,17 +6,22 @@
 #include <chrono>
 #include <iostream>
 
-void animacion(const std::vector<std::string> &images,
-               const std::chrono::milliseconds &interval,
-               int times)
+struct Animacion
 {
-  for (int i{}, j{}; i < times; ++i, ++j)
+  std::vector<std::string> data;
+  std::chrono::milliseconds interval;
+  int times;
+};
+
+void animar(const Animacion &animacion)
+{
+  for (int i{}, j{}; i < animacion.times; ++i, ++j)
   {
-    if (j == images.size()) j == 0;
+    if (j == animacion.data.size()) j = 0;
     auto begin{std::chrono::system_clock::now()};
-    std::cout << images[j] << std::flush;
+    std::cout << animacion.data[j] << std::flush;
     std::this_thread::sleep_for(
-      interval - (std::chrono::system_clock::now() - begin));
+      animacion.interval - (std::chrono::system_clock::now() - begin));
   }
 }
 
@@ -26,4 +31,14 @@ void mostrar_imagen(
 {
   std::cout << str << std::flush;
   std::this_thread::sleep_for(duration);
+}
+
+Animacion crear_animacion_default(std::string str)
+{
+  return
+    {
+      .data = std::vector<std::string>{std::move(str)},
+      .interval = std::chrono::milliseconds(0),
+      .times = 1
+    };
 }
