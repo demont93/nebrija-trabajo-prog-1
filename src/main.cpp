@@ -31,7 +31,6 @@
 
 #include "Animacion.h"
 #include "Screen.h"
-#include "Jugador.h"
 #include "Jugadores.h"
 #include "Juego.h"
 #include "TerminalScreen.h"
@@ -40,13 +39,13 @@
 #include <iostream>
 #include <chrono>
 #include <string_view>
-#include <iterator>
 #include <fstream>
 
 constexpr static int creditos_iniciales{10};
 
+template<typename Generator>
 auto crear_generador(std::uniform_int_distribution<int> &&dist,
-                     std::random_device &&dev)
+                     Generator &&dev)
 {
   return [&]() -> int { return dist(dev); };
 }
@@ -104,10 +103,13 @@ Animaciones inicializar_animaciones()
 
 int main()
 {
+  std::default_random_engine engine(
+    std::chrono::system_clock::now().time_since_epoch().count()
+  );
   Juego juego(
     TerminalScreen(inicializar_animaciones()),
     crear_generador(std::uniform_int_distribution(0, 36),
-                    std::random_device{}),
+                    engine),
     Jugadores(
       std::array<Jugador, 4>
         {

@@ -138,8 +138,6 @@ void Jugadores::etapa_final(S &screen)
     0,
     [](int acc, const Jugador &jugador) { return acc + 10 - jugador.cartera; }
   )};
-  // static_assert(std::same_as<decltype(*this), Jugadores>);
-  static_assert(std::ranges::range<decltype(*this)>);
   screen.resultado_final(*this, banca);
 }
 

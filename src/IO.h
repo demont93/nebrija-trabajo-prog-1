@@ -16,7 +16,7 @@ void prompt();
 
 // getline especializado para lanzar errores.
 template<typename T>
-T &get_line(T &in, std::string &s)
+void get_line(T &in, std::string &s)
 {
   prompt();
   if (!(std::getline(in, s)))
@@ -27,9 +27,6 @@ T &get_line(T &in, std::string &s)
       throw std::runtime_error("EOF encontrado.");
     else
       assert(false && "Shouldn't reach here.");
-  } else
-  {
-    return in;
   }
 }
 
