@@ -1,7 +1,7 @@
 add_executable(ruleta
         main.cpp
         Animacion.h
-        )
+        Screen.h Animacion.cpp Jugador.h Jugadores.cpp Jugadores.h IO.cpp IO.h Acierto.cpp Acierto.h TablaResultados.h Juego.h TerminalScreen.cpp TerminalScreen.h)
 
 add_custom_command(
         TARGET ruleta
