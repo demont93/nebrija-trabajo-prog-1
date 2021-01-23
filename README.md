@@ -66,8 +66,9 @@ jugador y cuánto dinero ha ganado la banca.
 
 # Requerimientos
 
-### Compiladores Compatibles
-- GCC 10 .. 10.2.1.
+### Compiladores Compatibles Probados
+- GCC 10..10.2.1.
+- Clang 11..12
 
 ### Standard de C++
 - 20
