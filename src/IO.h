@@ -1,13 +1,14 @@
 #pragma once
 
 #include <string>
-#include <stdexcept>
 #include <cassert>
 #include <iostream>
-#include "Jugadores.h"
 
-// Funcion para mostrar todos los mensajes que salen a la pantalla.
-void mostrar_mensaje(const std::string &str);
+template<typename T>
+concept display = requires (T x)
+{
+  {x.display()} -> std::same_as<void>;
+};
 
 // Muestra un simbolo para darle a entender al usuario que debe escribir una
 // respuesta.
@@ -32,12 +33,17 @@ T &get_line(T &in, std::string &s)
   }
 }
 
-void mostrar_status_jugador(const JugadorProxy &jugador);
-
-void mostrar_status_jugador(const Jugador &jugador);
-
 // crea un string con el monto en forma de dinero
 std::string format_dinero(int dinero);
 
-// Prompt de la Apuesta al usuario por stdout.
-void mostrar_mensaje_pedir_apuesta(int n_jugador);
+// Obtiene un entero a partir de una linea, suponiendo que la linea solo
+// consiste de un id y espacio opcional al principio y al final.
+int parse_int_de_linea(const std::string &linea);
+
+// Corta whitespace de ambos bordes de un string, devuelve un string_view.
+std::string_view trim(const std::string &str);
+
+// Lee un archivo con las imagenes ASCII. Para hacerlo sencillo, cada imagen
+// esta delimitada por el caracter '@'.
+std::string leer_imagen(std::ifstream &in);
+
