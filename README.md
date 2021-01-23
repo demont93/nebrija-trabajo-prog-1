@@ -65,7 +65,53 @@ dinero. Al finalizar el juego se debe mostrar cuánto dinero ha ganado cada
 jugador y cuánto dinero ha ganado la banca.
 > **Nota: El programa debe comprobar en todo momento que los datos introducidos por el usuario y las apuestas a realizar son coherentes, por ejemplo, no se puede apostar por el número 65.**
 
-# Extra 
+# Requerimientos
 
-- Compilado ejecutado y probado en GCC 10.2.1.
-- CXX_STANDARD=20
+## Compiladores Compatibles
+- GCC 10 .. 10.2.1.
+
+## Standard de C++
+- 20
+
+## Build Systems Compatibles
+- CMake
+
+## Tests (Necesario para un debug build.)
+- CTest (Incluído en CMake)
+- [GoogleTest](https://github.com/google/googletest)
+
+# Instrucciones de build con CMake desde Linux
+```bash
+cd nebrija-trabajo-prog-1
+mkdir cmake-build-release
+cd cmake-build-release
+cmake -DCMAKE_BUILD_TYPE=Release ../
+cmake --build . -- -j6
+./ruleta
+```
+
+# Tests
+Crea un debug build del proyecto con
+```bash
+cd nebrija-trabajo-prog-1
+mkdir cmake-build-debug
+cd cmake-build-debug
+cmake -DCMAKE_BUILD_TYPE=debug ../
+cmake --build . -- -j6
+cd tests
+```
+
+Para mostrar los tests disponibles:
+```bash
+ctest -N
+```
+
+Para ejecutar todos los tests:
+```bash
+ctest
+```
+
+Para ejecutar un test especifico:
+```bash
+ctest -L NombreDelTest
+```
