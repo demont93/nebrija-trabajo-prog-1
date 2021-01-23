@@ -67,16 +67,16 @@ jugador y cuánto dinero ha ganado la banca.
 
 # Requerimientos
 
-## Compiladores Compatibles
+### Compiladores Compatibles
 - GCC 10 .. 10.2.1.
 
-## Standard de C++
+### Standard de C++
 - 20
 
-## Build Systems Compatibles
+### Build Systems Compatibles
 - CMake
 
-## Tests (Necesario para un debug build.)
+### Tests (Necesario para un debug build.)
 - CTest (Incluído en CMake)
 - [GoogleTest](https://github.com/google/googletest)
 
