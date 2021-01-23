@@ -32,7 +32,6 @@ Trabajo final en grupo para Programacion I.
   - [x] Entrada de retirarse o seguir.
   - [x] Entrada de elegir ranura.
   - [x] Entrada de elegir apuesta.
-- [ ] Tests de user input.
 - [x] Flair?
 
 # Ruleta
