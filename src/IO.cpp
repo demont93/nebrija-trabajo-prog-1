@@ -32,7 +32,7 @@ int parse_int_de_linea(const std::string &linea)
            value < std::numeric_limits<int>::min())
     throw std::out_of_range("Number is out of range of int32_t.");
 
-  return value;
+  return static_cast<int>(value);
 }
 
 // Corta whitespace de ambos bordes de un string, devuelve un string_view.

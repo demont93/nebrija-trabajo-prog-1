@@ -86,7 +86,6 @@ class Jugadores
  private:
   std::array<Jugador, cantidad_de_jugadores> jugadores;
   std::array<bool, cantidad_de_jugadores> _activos;
-  size_t n_activos{cantidad_de_jugadores};
 
   JugadorProxy make_proxy(size_t i);
 };
@@ -136,7 +135,8 @@ void Jugadores::etapa_final(S &screen)
     jugadores.begin(),
     jugadores.end(),
     0,
-    [](int acc, const Jugador &jugador) { return acc + 10 - jugador.cartera; }
+    [](int acc, const Jugador &jugador)
+    { return acc + 10 - jugador.cartera; }
   )};
   screen.resultado_final(*this, banca);
 }
@@ -224,7 +224,7 @@ struct Jugadores::Iter
 
   Iter &operator++();
 
-  const Iter operator++(int);
+  Iter &operator++(int);
 
   bool operator==(const Iter &rhs) const
   {
@@ -255,11 +255,12 @@ Jugadores::Iter<Container> &Jugadores::Iter<Container>::operator++()
 template<typename Container>
 requires std::same_as<std::remove_cvref_t<Container>, Jugadores>
 Jugadores::Iter<Container>::Iter(container *data, int index)
-  : data(data), index(index) {}
+  : index(static_cast<size_t>(index)), data(data)
+{}
 
 template<typename Container>
 requires std::same_as<std::remove_cvref_t<Container>, Jugadores>
-const Jugadores::Iter<Container> Jugadores::Iter<Container>::operator++(int)
+Jugadores::Iter<Container> &Jugadores::Iter<Container>::operator++(int)
 {
   auto old{this};
   ++index;

@@ -1,11 +1,11 @@
 #include "Jugadores.h"
-#include "Acierto.h"
 #include <iostream>
 
 JugadorProxy::JugadorProxy(int &id, int &cartera,
                            Apuesta &apuesta,
                            bool &activo)
-  : id(id), creditos(cartera), apuesta(apuesta), activo(activo) {}
+  : id(id), creditos(cartera), apuesta(apuesta), activo(activo)
+{}
 
 Jugadores::iterator Jugadores::begin()
 {
@@ -47,14 +47,16 @@ JugadorProxy Jugadores::make_proxy(size_t i)
 
 Jugadores::Jugadores(std::array<Jugador, cantidad_de_jugadores> jugadores,
                      std::array<bool, cantidad_de_jugadores> activos)
-  : jugadores(jugadores), _activos(activos) {}
+  : jugadores(jugadores), _activos(activos)
+{}
 
 std::vector<JugadorProxy> Jugadores::activos()
 {
   std::vector<JugadorProxy> ret_val{};
-  for (int i{}; i < jugadores.size(); ++i)
+  for (int i{}; i < static_cast<int>(jugadores.size()); ++i)
   {
-    if (_activos[i]) ret_val.emplace_back(make_proxy(i));
+    if (_activos[static_cast<size_t>(i)])
+      ret_val.emplace_back(make_proxy(static_cast<size_t>(i)));
   }
   return ret_val;
 }
@@ -98,7 +100,9 @@ Resultado JugadorProxy::etapa_de_resultados(int resultado)
   return ret_val;
 }
 
-bool JugadorProxy::get_activo() const noexcept { return activo; }
+bool JugadorProxy::get_activo() const noexcept
+{ return activo; }
 
 const Apuesta &
-JugadorProxy::get_apuesta() const noexcept { return apuesta; }
+JugadorProxy::get_apuesta() const noexcept
+{ return apuesta; }

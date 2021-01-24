@@ -1,8 +1,4 @@
 #include "TerminalScreen.h"
-#include "Screen.h"
-#include "Animacion.h"
-#include "Jugadores.h"
-#include "IO.h"
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -17,10 +13,10 @@ void TerminalScreen::animar(const Animacion &animacion)
 {
   for (int i{}, j{}; i < animacion.times; ++i, ++j)
   {
-    if (j == animacion.data.size()) j = 0;
+    if (j == static_cast<int>(animacion.data.size())) j = 0;
     auto begin{std::chrono::system_clock::now()};
     clear();
-    std::cout << animacion.data[j] << std::flush;
+    std::cout << animacion.data[static_cast<size_t>(j)] << std::flush;
     std::this_thread::sleep_for(
       animacion.interval - (std::chrono::system_clock::now() - begin));
   }
@@ -150,12 +146,14 @@ void TerminalScreen::crear_header(std::ostringstream &out,
 {
   out << "| ";
   for (int i{}; i < row.size(); ++i)
-    out << std::setw(width[i]) << row[i] << " | ";
+    out << std::setw(width[static_cast<size_t>(i)])
+        << row[static_cast<size_t>(i)] << " | ";
   out << '\n';
 }
 
 TerminalScreen::TerminalScreen(Animaciones animaciones)
-  : animaciones(std::move(animaciones)) {}
+  : animaciones(std::move(animaciones))
+{}
 
 void TerminalScreen::se_retira() const
 {

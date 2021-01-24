@@ -16,7 +16,7 @@ ColorRanura numero_a_color(int n)
 {
   // El assert nos permite dar un error si le pasamos valores incorrectos a la
   // funcion. Es mejor dar un error temprano.
-  assert(n == 0 || n == 1 && "Solo se puede obtener un color del id 0 o 1");
+  assert((n == 0 || n == 1) && "Solo se puede obtener un color del id 0 o 1");
   if (n == 0) return ColorRanura::Rojo;
   else return ColorRanura::Negro;
 }
