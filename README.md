@@ -33,6 +33,7 @@ Trabajo final en grupo para Programacion I.
   - [x] Entrada de elegir ranura.
   - [x] Entrada de elegir apuesta.
 - [x] Flair?
+- [ ] Tests
 
 # Ruleta
 
